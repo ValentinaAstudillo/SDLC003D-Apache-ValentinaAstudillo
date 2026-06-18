@@ -1,0 +1,75 @@
+name: Desplegar Apache EA2
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build y Push Docker
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/apache-ea2:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/apache-ea2:latest
+
+      - name: Desplegar en k3s por SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.K3S_SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.EA2_SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p ~/apache-ea2
+            cd ~/apache-ea2
+            cat > deployment.yaml <<'EOF'
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: apache-deployment
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  app: apache-app
+              template:
+                metadata:
+                  labels:
+                    app: apache-app
+                spec:
+                  containers:
+                  - name: apache
+                    image: ${{ secrets.DOCKER_USERNAME }}/apache-ea2:latest
+                    imagePullPolicy: Always
+                    ports:
+                    - containerPort: 80
+            EOF
+
+            cat > service.yaml <<'EOF'
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: apache-service
+            spec:
+              type: NodePort
+              selector:
+                app: apache-app
+              ports:
+              - port: 80
+                targetPort: 80
+                nodePort: 30100
+            EOF
+
+            kubectl apply -f deployment.yaml
+            kubectl apply -f service.yaml
+            kubectl rollout status deployment/apache-deployment
+            curl -I http://localhost:30100
