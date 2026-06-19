@@ -68,9 +68,8 @@ jobs:
                 targetPort: 80
                 nodePort: 30100
             EOF
-            echo "apiVersion: [" > deployment.yaml
+            
             kubectl apply -f deployment.yaml
-            exit 1
             kubectl apply -f service.yaml
             kubectl rollout status deployment/apache-deployment
             curl -I http://localhost:30100
