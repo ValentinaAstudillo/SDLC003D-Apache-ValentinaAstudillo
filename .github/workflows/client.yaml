@@ -33,7 +33,7 @@ jobs:
             cd ~/apache-ea2
             cat > deployment.yaml <<'EOF'
             apiVersion: apps/v1
-            kind: DeploymentMalo
+            kind: Deployment
             metadata:
               name: apache-deployment
             spec:
@@ -68,7 +68,7 @@ jobs:
                 targetPort: 80
                 nodePort: 30100
             EOF
-
+            echo "apiVersion: [" > deployment.yaml
             kubectl apply -f deployment.yaml
             kubectl apply -f service.yaml
             kubectl rollout status deployment/apache-deployment
