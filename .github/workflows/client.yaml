@@ -32,12 +32,12 @@ jobs:
             mkdir -p ~/apache-ea2
             cd ~/apache-ea2
             cat > deployment.yaml <<'EOF'
-            apiVersion: apps/v1
+            apiVersion apps/v1
             kind: Deployment
             metadata:
               name: apache-deployment
             spec:
-              replicas: 
+              replicas: 1
               selector:
                 matchLabels:
                   app: apache-app
