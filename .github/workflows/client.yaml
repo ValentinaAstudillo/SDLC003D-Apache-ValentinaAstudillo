@@ -25,7 +25,7 @@ jobs:
       - name: Desplegar en k3s por SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ vars.K3S_SERVER_PUBLIC_IP }}
+          host: 1.1.1.1
           username: ubuntu
           key: ${{ secrets.EA2_SSH_PRIVATE_KEY }}
           script: |
