@@ -48,7 +48,7 @@ jobs:
                 spec:
                   containers:
                   - name: apache
-                    image: ${{ secrets.DOCKER_USERNAME }}/apache-ea2:latest
+                    image: imagen-inexistente/apache-ea2:noexiste
                     imagePullPolicy: Always
                     ports:
                     - containerPort: 80
@@ -71,5 +71,5 @@ jobs:
             
             kubectl apply -f deployment.yaml
             kubectl apply -f service.yaml
-            kubectl rollout status deployment/apache-deployment
+            kubectl rollout status deployment/apache-deployment --timeout=30s
             curl -I http://localhost:30100
