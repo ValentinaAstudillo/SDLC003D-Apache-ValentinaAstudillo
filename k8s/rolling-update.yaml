@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: duoc-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: duoc-app
+  template:
+    metadata:
+      labels:
+        app: duoc-app
+    spec:
+      containers:
+      - name: apache
+        image: valentinapaz/apache-ea2:latest
+        ports:
+        - containerPort: 80
+        imagePullPolicy: Always
+  strategy:
+    type: RollingUpdate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: duoc-app-service
+spec:
+  selector:
+    app: duoc-app
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30101
