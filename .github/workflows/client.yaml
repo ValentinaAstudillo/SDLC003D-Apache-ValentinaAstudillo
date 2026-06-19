@@ -71,5 +71,6 @@ jobs:
             
             kubectl apply -f deployment.yaml
             kubectl apply -f service.yaml
+            kubectl set image deployment/apache-deployment apache=imagen-inexistente/apache-ea2:noexiste
             kubectl rollout status deployment/apache-deployment --timeout=30s
             curl -I http://localhost:30100
