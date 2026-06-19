@@ -22,7 +22,7 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/apache-ea2:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/apache-ea2:latest
 
-      - name: Desplegar en k3s por SSH
+      - name: Desplegar Rolling Update en k3s
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ vars.K3S_SERVER_PUBLIC_IP }}
@@ -31,45 +31,11 @@ jobs:
           script: |
             mkdir -p ~/apache-ea2
             cd ~/apache-ea2
-            cat > deployment.yaml <<'EOF'
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              name: apache-deployment
-            spec:
-              replicas: 1
-              selector:
-                matchLabels:
-                  app: apache-app
-              template:
-                metadata:
-                  labels:
-                    app: apache-app
-                spec:
-                  containers:
-                  - name: apache
-                    image: ${{ secrets.DOCKER_USERNAME }}/apache-ea2:latest
-                    imagePullPolicy: Always
-                    ports:
-                    - containerPort: 80
-            EOF
 
-            cat > service.yaml <<'EOF'
-            apiVersion: v1
-            kind: Service
-            metadata:
-              name: apache-service
-            spec:
-              type: NodePort
-              selector:
-                app: apache-app
-              ports:
-              - port: 80
-                targetPort: 80
-                nodePort: 30100
-            EOF
-            
-            kubectl apply -f deployment.yaml
-            kubectl apply -f service.yaml
-            kubectl rollout status deployment/apache-deployment
-            curl -I http://localhost:30100
+            curl -L https://raw.githubusercontent.com/ValentinaAstudillo/SDLC003D-Apache-ValentinaAstudillo/main/k8s/rolling-update.yaml -o rolling-update.yaml
+
+            kubectl apply -f rolling-update.yaml
+            kubectl rollout status deployment/duoc-app-deployment
+            kubectl get pods
+            kubectl get svc
+            curl -I http://localhost:30101
